@@ -1,0 +1,24 @@
+{
+  "name": "it-helpdesk-tracker",
+  "version": "1.0.0",
+  "description": "Making a fullstack it help desk tracker all on 1 responsive page.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lwin496/it-helpdesk-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lwin496/it-helpdesk-tracker/issues"
+  },
+  "homepage": "https://github.com/lwin496/it-helpdesk-tracker#readme",
+  "dependencies": {
+    "express": "^5.3.0"
+  },
+  "type": "module"
+}
