@@ -78,4 +78,29 @@ app.delete('/api/tickets/:id', (req,res) =>{
       res.sendStatus(204)
 })
 
+app.use(express.json())
+
+let nextTicketId = Math.max(0, ...tickets.map(ticket => ticket.id)) + 1
+
+app.post('/api/tickets', (req, res) =>{ 
+      const {title ,description, priority} = req.body ?? {}
+      const priorities = ['low', 'medium', 'high', 'critical']
+      if(typeof title !== 'string' || !title.trim() || typeof description !== 'string' || !description.trim() || !priorities.includes(priority)){
+            return res.status(400).json({error: 'enter a title, description, and valid priority'})
+
+      }
+      const ticket = { 
+            id: nextTicketId++,
+            title: title.trim(),
+            priority,
+            status: 'open',
+            createdAt: new Date().toLocaleDateString('en-US'),
+            supportNotes: ''
+      }
+
+      tickets.push(ticket)
+      res.status(201).json(ticket)
+})
+
 app.listen(3000)
+ 

@@ -136,4 +136,34 @@ cancelTicketButton.addEventListener('click', ()=>{
       newTicketButton.focus()
 })
 
+
+newTicketForm.addEventListener('submit', async (event) =>{ 
+      event.preventDefault()
+
+      const fields = Object.fromEntries(new FormData(newTicketForm))
+
+      try{ 
+            const response = await fetch('/api/tickets' ,{ 
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify(fields)
+            })
+
+            if(!response.ok){ 
+                  alert('Could not create the ticket. Check the form fields')
+                  return
+            }
+      }catch(error){ 
+            console.error(error)
+            alert('could not reach the server')
+            return
+      }
+      newTicketForm.reset()
+      newTicketForm.hidden = true
+      ticketDetails.hidden = selectedTicketId === null
+      await loadTickets()
+
+      
+})
+
 loadTickets()
