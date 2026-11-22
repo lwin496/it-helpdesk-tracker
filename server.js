@@ -78,4 +78,50 @@ app.delete('/api/tickets/:id', (req,res) =>{
       res.sendStatus(204)
 })
 
+
+app.use(express.json())
+
+let nextTicketID = Math.max(0, ...tickets.map(ticket => ticket.id)) + 1
+
+app.post('/api/tickets', (req, res) =>{
+      const {title, description, priority} = req.body ?? {}
+      const priorities = ['low', 'medium','high','critical']
+
+      if(typeof title !== 'string' || !title.trim() || !priorities.includes(priority)){ 
+            return res.status(400).json({error: 'enter a title, description, and valid priority'})
+      }
+
+      const ticket = { 
+            id: nextTicketID++,
+            title: title.trim(),
+            description: description.trim(),
+            priority,
+            status: 'open',
+            createdAt: new Date().toLocaleDateString('en-US'),
+            supportNotes: ''
+      }
+      tickets.push(ticket)
+      res.status(201).json(ticket)
+})
+
+app.patch('/api/tickets/:id', (req, res) =>{ 
+      const ticket = tickets.find(ticket  => String(ticket.id) === req.params.id)
+      if(!ticket){ 
+            return res.status(404).json({error: 'ticket not found'})
+      }
+
+      const {supportNotes, status} = req.body ?? {}
+      const validStatuses = ['open', 'in-progress', 'waiting-on-user', 'resolved']
+      
+      if(typeof supportNotes !== 'string' || !validStatuses.includes(status)){ 
+            return res.status(400).json({error: 'enter valid notes and status'})
+      }
+
+      ticket.supportNotes = supportNotes.trim()
+      ticket.status = status
+
+      return res.json(ticket)
+})
+
+
 app.listen(3000)

@@ -8,16 +8,23 @@ let selectedTicketId = null
 let ticketToDeleteId = null
 
 const loadTickets = async () =>{ 
-      const response = await fetch('/api/tickets')
+      const response = await fetch('/api/tickets', {cache: 'no-store'})
       const tickets = await response.json()
 
       const activeTickets = tickets.filter(ticket => ticket.status !== 'resolved')
       const resolvedTickets = tickets.filter(ticket => ticket.status === 'resolved')
 
       const activeList = document.getElementById('active-ticket-list')
-      activeList.replaceChildren()
+      const resolvedList = document.getElementById('resolved-ticket-list')
 
-      for(const ticket of activeTickets){ 
+      activeList.replaceChildren()
+      resolvedList.replaceChildren()
+
+      for(const ticket of tickets){ 
+
+            const isResolved = ticket.status === 'resolved'
+           
+
             const card = document.createElement('div')
             card.className = 'border rounded-3 p-3 mt-3'
             const header = document.createElement('div')
@@ -40,8 +47,8 @@ const loadTickets = async () =>{
             date.textContent = ticket.createdAt
 
             const status = document.createElement('span')
-            status.className = 'badge bg-primary'
             status.textContent = ticket.status
+            status.className = isResolved ? 'badge-bg-success' : 'badge bg-primary'
 
             const priority = document.createElement('span')
             priority.className = 'small text-muted'
@@ -51,6 +58,7 @@ const loadTickets = async () =>{
             open.className = 'btn btn-primary btn-sm'
             open.type = 'button'
             open.textContent = 'Open'
+            
 
             
             open.addEventListener('click', ()=>{ 
@@ -77,19 +85,26 @@ const loadTickets = async () =>{
                   deleteDialog.showModal()
             })
 
-
-            header.append(title,id)
-            body.append(date,status,priority)
-            bottom.append(open, close)
-            card.append(header, body, bottom)
         
-            activeList.append(card)
+            header.append(title, id)
+            body.append(date, status)
+            card.append(header, body)
+
+            if (!isResolved) {
+                  body.append(priority)
+                  bottom.append(open, close)
+                  card.append(bottom)
+            }
+
+           
+            const targetList = isResolved ? resolvedList : activeList
+            targetList.append(card)
       }
 
       console.table(activeTickets)
       console.table(resolvedTickets)
       
-
+      return tickets
 
 }     
 
@@ -134,6 +149,72 @@ cancelTicketButton.addEventListener('click', ()=>{
       newTicketForm.hidden = true
       ticketDetails.hidden = selectedTicketId === null
       newTicketButton.focus()
+})
+
+
+newTicketForm.addEventListener('submit', async(event)=>{ 
+      event.preventDefault()
+      const fields = Object.fromEntries(new FormData(event.currentTarget))
+
+      try{
+            const response = await fetch('api/tickets', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify(fields)
+            })
+            if(!response.ok){ 
+                  alert('could not create a ticket check the form fields')
+                  return
+            }
+
+      }catch(error){ 
+            console.log(error)
+            alert('could not reach the server')
+            return
+      }
+      newTicketForm.reset()
+      newTicketForm.hidden = true
+      ticketDetails.hidden = selectedTicketId === null
+      await loadTickets()
+
+})
+
+const saveTicketButton = document.getElementById('save-ticket-button')
+
+saveTicketButton.addEventListener('click', async()=>{
+      if(selectedTicketId === null) return
+      const id = selectedTicketId
+
+      const updates ={ 
+            supportNotes: document.getElementById('support-notes').value,
+            status: document.getElementById('detail-status').value
+      }
+
+      try{ 
+            const response = await fetch(`/api/tickets/${selectedTicketId}`, { 
+                  method: 'PATCH',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify(updates)
+            })
+            if(!response.ok){ 
+                  alert('could not save changes, check the selected status')
+                  return
+            }
+         
+            // await loadTickets()
+            const refreshedTickets = await loadTickets()
+            const updatedTicket = refreshedTickets.find(ticket => ticket.id === id)
+
+            if(updatedTicket && selectedTicketId === id){ 
+                  document.getElementById('support-notes').value = updatedTicket.supportNotes ?? ''
+                  document.getElementById('detail-status').value = updatedTicket.status
+            }
+      }catch(error){ 
+            console.error(error)
+            alert('could not reach the server')
+            return
+      }
+
 })
 
 loadTickets()
