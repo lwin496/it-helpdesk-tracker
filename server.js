@@ -78,6 +78,7 @@ app.delete('/api/tickets/:id', (req,res) =>{
       res.sendStatus(204)
 })
 
+<<<<<<< HEAD
 
 app.use(express.json())
 
@@ -95,15 +96,36 @@ app.post('/api/tickets', (req, res) =>{
             id: nextTicketID++,
             title: title.trim(),
             description: description.trim(),
+=======
+app.use(express.json())
+
+let nextTicketId = Math.max(0, ...tickets.map(ticket => ticket.id)) + 1
+
+app.post('/api/tickets', (req, res) =>{ 
+      const {title ,description, priority} = req.body ?? {}
+      const priorities = ['low', 'medium', 'high', 'critical']
+      if(typeof title !== 'string' || !title.trim() || typeof description !== 'string' || !description.trim() || !priorities.includes(priority)){
+            return res.status(400).json({error: 'enter a title, description, and valid priority'})
+
+      }
+      const ticket = { 
+            id: nextTicketId++,
+            title: title.trim(),
+>>>>>>> 5d48eeb31961812486fdf5acd7c6123cb3f8890f
             priority,
             status: 'open',
             createdAt: new Date().toLocaleDateString('en-US'),
             supportNotes: ''
       }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5d48eeb31961812486fdf5acd7c6123cb3f8890f
       tickets.push(ticket)
       res.status(201).json(ticket)
 })
 
+<<<<<<< HEAD
 app.patch('/api/tickets/:id', (req, res) =>{ 
       const ticket = tickets.find(ticket  => String(ticket.id) === req.params.id)
       if(!ticket){ 
@@ -124,4 +146,7 @@ app.patch('/api/tickets/:id', (req, res) =>{
 })
 
 
+=======
+>>>>>>> 5d48eeb31961812486fdf5acd7c6123cb3f8890f
 app.listen(3000)
+ 
